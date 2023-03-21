@@ -1,8 +1,9 @@
 import "./utils/array-helpers.js";
-import { log, logError, retry, timeoutPromise } from "./utils/promise-helpers.js";
+import { logError, retry, timeoutPromise } from "./utils/promise-helpers.js";
 import { notasService as service } from "./nota/service.js";
 import { takeUntil, debounceTime, pipe, partialize } from "./utils/operators.js";
 import { EventEmitter } from './utils/event-emitter.js'
+
 const operations = pipe(
   partialize(takeUntil, 3),
   partialize(debounceTime, 500),

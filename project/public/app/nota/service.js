@@ -1,18 +1,20 @@
 import { handleStatus, logError } from "../utils/promise-helpers.js"
 import { partialize, pipe } from "../utils/operators.js"
+import { Maybe } from "../utils/maybe.js"
 
 const API = "http://localhost:3000/notas"
 
-const getItemsFromNotas = notas => notas.$flatMap((nota) => nota?.itens)
+const getItemsFromNotas = notasM => notasM.map(notas => notas.$flatMap((nota) => nota?.itens))
 
-const filterItemsByCode = (code, itens) => itens.filter((item) => item?.codigo == code)
+const filterItemsByCode = (code, itensM) => itensM.map(itens => itens.filter((item) => item?.codigo == code))
 
-const sumItemsValues = items => items.reduce((total, item) => total + item?.valor, 0)
+const sumItemsValues = itemsM => itemsM.map(items => items.reduce((total, item) => total + item?.valor, 0))
 
 export const notasService = {
     listAll() {
         return fetch(API)
             .then(handleStatus)
+            .then(notas => Maybe.of(null))
             .catch(err => {
                 logError(err)
                 return Promise.reject('Não foi possível obter as notas fiscais.')
@@ -23,5 +25,6 @@ export const notasService = {
         const sumItems = pipe(getItemsFromNotas, filterItems, sumItemsValues)
         return this.listAll()
         .then(sumItems)
+        .then(result => result.getOrElse(0))
     }
 } 
